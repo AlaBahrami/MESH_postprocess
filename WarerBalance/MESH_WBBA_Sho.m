@@ -143,14 +143,22 @@ function MESH_WBBA_Sho(prmname, prmnamets,...
                             timestep);
 %% assigning title       
 %tl = 'Fraser Basin Average';
-name = split(prmname,"_");
-str = name{2};
-if (~subbasin)
-        tl = strcat (str ,' Basin', ' Average');
-else
-        tl = strcat (str ,' Subbasin', ' Average');
-end
-                        
+    name = split(prmname,"_");
+    str = name{2};
+    if (~subbasin)
+            tl = strcat (str ,' Basin', ' Average');
+    else
+            tl = strcat (str ,' Subbasin', ' Average');
+    end
+%% output directory 
+    if (~subbasin)
+        outdir = 'output\fraser\non_glacier\basin\';
+        outdir = strcat(outdir, str, '_');
+    else
+        outdir = 'output\fraser\non_glacier\subbasin\';
+        outdir = strcat(outdir, str, '_');
+    end
+
 %% reading timestep
     % this section is activated when the imblance of entire basin is
     % needed. It can be activated if the imbalance of subbasin is desired
@@ -174,9 +182,11 @@ end
      
     
    % plotting imbalance  
+        fs1 = strcat(outdir,'imbalance.fig');
+        fs2 = strcat(outdir,'imbalance.tif');
     
         DataName = sprintf('The summation of imbalance is: %0.2f', imbl_sum);
-        figure ('units','normalized','outerposition',[0 0 1 1]);
+        fig = figure ('units','normalized','outerposition',[0 0 1 1]);
 
         h = plot(time_ts(2:end), imbl(2:end),'DatetimeTickFormat' , 'yyyy-MMM'); 
         h.LineStyle =  lsty{1};
@@ -207,16 +217,22 @@ end
         h.FontSize = 14;
         h.Orientation = 'horizontal';
         h.EdgeColor = color{end};
+        saveas(fig, fs1);
+        saveas(fig, fs2);
+        close(fig);
     end 
 %% Plotting WB compartments    
 % overland, lateral and drainage 
+    % output dir 
+    fs1 = strcat(outdir,'flow.fig');
+    fs2 = strcat(outdir,'flow.tif');
+
     st(:,1) = BAWB(: , ind_OVRFLWACC); 
     st(:,2) = BAWB(: , ind_LATFLWACC); 
     st(:,3) = BAWB(: , ind_DRAINSOLACC); 
-    
     DataName =  {'OVRFLWACC', 'LATFLWACC', 'DRAINSOLACC'};
     
-    figure ('units','normalized','outerposition',[0 0 1 1]);
+    fig = figure ('units','normalized','outerposition',[0 0 1 1]);
     
     for j = 1 : 3      
         h = plot(time, st(:,j),'DatetimeTickFormat' , 'yyyy-MMM');
@@ -253,11 +269,18 @@ end
     h.Orientation = 'horizontal';
     h.EdgeColor = color{end};     
     
+    saveas(fig, fs1);
+    saveas(fig, fs2);
+    close(fig);
+    
 % SWE
+    fs1 = strcat(outdir,'SWE.fig');
+    fs2 = strcat(outdir,'SWE.tif');
+
     st(:,1) = BAWB(: , ind_SNO); 
     DataName =  {'SNO'};
     
-    figure ('units','normalized','outerposition',[0 0 1 1]);
+    fig = figure ('units','normalized','outerposition',[0 0 1 1]);
     
     h = plot(time, st(:,1),'DatetimeTickFormat' , 'yyyy-MMM'); 
     h.LineStyle =  lsty{1};
@@ -288,16 +311,22 @@ end
     h.FontSize = 14;
     h.Orientation = 'horizontal';
     h.EdgeColor = color{end};
-
+    
+    saveas(fig, fs1);
+    saveas(fig, fs2);
+    close(fig);
+    
 %  Liquid, Frozen, and ALW
-
+    fs1 = strcat(outdir,'WS.fig');
+    fs2 = strcat(outdir,'WS.tif');
+    
     st(:,1) = BAWB(: , ind_LQWSSOL); 
     st(:,2) = BAWB(: , ind_FZWSSOL); 
     st(:,3) = BAWB(: , ind_ALWSSOL); 
     
     DataName =  {'LQWSSOL', 'FZWSSOL', 'ALWSSOL'};
     
-    figure ('units','normalized','outerposition',[0 0 1 1]);
+    fig = figure ('units','normalized','outerposition',[0 0 1 1]);
     
     for j = 1 : 3      
         h = plot(time, st(:,j),'DatetimeTickFormat' , 'yyyy-MMM');
@@ -335,12 +364,17 @@ end
     h.Orientation = 'horizontal';
     h.EdgeColor = color{end};
     
+    saveas(fig, fs1);
+    saveas(fig, fs2);
+    close(fig);
 % STGGW
+    fs1 = strcat(outdir,'GW.fig');
+    fs2 = strcat(outdir,'GW.tif');
     
     st(:,1) = BAWB(: , ind_STGGW); 
     DataName =  {'STGGW'};
     
-    figure ('units','normalized','outerposition',[0 0 1 1]);
+    fig = figure ('units','normalized','outerposition',[0 0 1 1]);
     
     h = plot(time, st(:,1),'DatetimeTickFormat' , 'yyyy-MMM'); 
     h.LineStyle =  lsty{1};
@@ -371,8 +405,15 @@ end
     h.FontSize = 14;
     h.Orientation = 'horizontal';
     h.EdgeColor = color{end};
+    
+    saveas(fig, fs1);
+    saveas(fig, fs2);
+    close(fig);
 
 % Total Storage and other compartments
+    fs1 = strcat(outdir,'STGW.fig');
+    fs2 = strcat(outdir,'STGW.tif');
+
     st(:,1) = BAWB(: , ind_STGW); 
     st(:,2) = BAWB(: , ind_SNO); 
     st(:,3) = BAWB(: , ind_LQWSSOL);
@@ -380,7 +421,7 @@ end
     
     DataName =  {'STGW', 'SNO', 'LQWSSOL', 'FZWSSOL'};
     
-    figure ('units','normalized','outerposition',[0 0 1 1]);
+    fig = figure ('units','normalized','outerposition',[0 0 1 1]);
     for j = 1 : 4
         h = plot(time, st(:,j),'DatetimeTickFormat' , 'yyyy-MMM'); 
         hold on
@@ -414,5 +455,8 @@ end
     h.FontSize = 14;
     h.Orientation = 'horizontal';
     h.EdgeColor = color{end};
-
+    
+    saveas(fig, fs1);
+    saveas(fig, fs2);
+    close(fig);
 end 

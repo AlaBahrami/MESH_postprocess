@@ -1,5 +1,5 @@
-function STFL = MESH_ST_extract(prmname, year_start, month_start, day_start,...
-                                year_finish, month_finish, day_finish)
+function STFL = MESH_ST_extract(prmname, year_start, day_start,...
+                                year_finish, day_finish)
 
 % Syntax
 %
@@ -20,15 +20,11 @@ function STFL = MESH_ST_extract(prmname, year_start, month_start, day_start,...
 %
 %       year_start              Start year of simulation 
 %
-%       month_start             Start month of simulation
-%
-%       day_start               Start day of simulation 
+%       day_start               Start day of simulation in Julian day 
 %
 %       year_finish             Finish year of simulation 
 %
-%       month_finish            Finish month of simulation     
-%
-%       day_finish              Finish day of simulation 
+%       day_finish              Finish day of simulation in Julian day
 %
 %
 % Output      
@@ -50,25 +46,14 @@ function STFL = MESH_ST_extract(prmname, year_start, month_start, day_start,...
     if nargin == 0
         prmname          = 'STFLO_Fraser_nonglacier.txt';
         year_start       = 2004;
-        month_start      = 9;
-        day_start        = 1;
+        day_start        = 245;
         year_finish      = 2017;
-        month_finish     = 8;
-        day_finish       = 30;
+        day_finish       = 242;
     end 
     
     fid  = fopen(prmname);
     Info = textscan(fid, '%s %s');
-    fclose(fid);
-      
-%% construnct time 
-    % time stamp is used to extract the subselction of data if is is
-    % required
-    % daily
-    ts      = datetime(year_start, month_start, day_start);
-    tf      = datetime(year_finish, month_finish, day_finish);
-    time    =  ts : caldays(1) : tf;
-    
+    fclose(fid);      
 %% Reading input files 
     %station info
     [stinf,id , ~] = xlsread(Info{1,2}{1 , 1});
@@ -86,6 +71,10 @@ function STFL = MESH_ST_extract(prmname, year_start, month_start, day_start,...
     
 %%  reading streamflow simulations 
     st = xlsread(Info{1,2}{2 , 1});
+    rs = find (st(:,1) == year_start  & st(:,2) == day_start); 
+    rf = find (st(:,1)  == year_finish & st(:,2) == day_finish); 
+    st = st(rs : rf, :);
+    
     for j = 1 : m
             STFL(j).data = st(:, 2*(j+1) - 1 : 2*(j+1));
     end 

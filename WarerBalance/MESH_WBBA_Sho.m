@@ -1,4 +1,7 @@
-function MESH_WBBA_Sho()
+function MESH_WBBA_Sho(prmname, prmnamets,...
+                        year_start, day_start, hour_start, min_start, ...        
+                        year_finish, day_finish, day_finish2, hour_finish, min_finish,...
+                        timestep)
 
 % Syntax
 %
@@ -8,48 +11,63 @@ function MESH_WBBA_Sho()
 %
 %       The pupoose of this function is to read MESH basin average water balance 
 %       compartments, daily and timestep. Then, desired figures are plotted.
-%       If it is required, the BAWB output can be saved. 
+%        
 % 
 %
 % Input 
 %
-%       prmname                 The input parameter file includes input
-%                               file information (daily and ts). 
+%       prmname                 The input parameter of daily simulations
+%
+%       prmnamets               The input parameter of timestep simulations
 %
 %       year_start              Start year of simulation 
 %
 %       day_start               Start day of simulation 
 %
+%       hour_start              Start hour of simulation
+%        
+%       min_start               Start minute of simulation
+%
 %       year_finish             Finish year of simulation 
 %
 %       day_finish              Finish day of simulation 
 %
+%       day_finish2             Finish day of simulation 
+%
+%       hour_finish             finish hour of simulation
+%        
+%       min_finish              finish minute of simulation
+%
+%       timestep                whether time step data is read
+%
 %
 % Output      
 % 
-%       BAWB                    Basin Averaged TWS                  
+%                               series of plots                  
 %
 % Reference 
 %       
 %
-% See also: 
+% See also: MESH_WBBA_extract, Julian2MonthDay
 %
 % Author: Ala Bahrami       
 %
 % Created Date: 02/21/2021
 %
+% last modified : 02/24/2021
+%
 %   todo:
 %       1) modify indices for considering ts results 
 %       2) modify the MESH_BAWB_extract to get wb for basin and subbasins 
 %       3) modify it to be comatabile to read all subbasins 
+%       4) MESH_WBBA_extract()
 %
 %% Copyright (C) 2021 Ala Bahrami                                                              
 %% loading the input files 
 
     if nargin == 0
-        prmname          = 'BAWB_Fraser_glac.txt';
-        ts               = datetime(2004, 09, 01);
-        tf               = datetime(2017, 08, 30);
+        prmname          = 'BAWB_Fraser_nonglac_daily.txt';
+        prmnamets        = 'BAWB_Fraser_nonglac_ts.txt';
         year_start       = 2004;
         day_start        = 245;
         hour_start       = 0;
@@ -59,16 +77,25 @@ function MESH_WBBA_Sho()
         day_finish2      = 243;
         hour_finish      = 22;
         min_finish       = 30;
+        timestep         = false;
     end 
-
-    fid  = fopen(prmname);
-    Info = textscan(fid, '%s %s');
-    fclose(fid);
-    
-    ts2 = datetime(2004, 09, 01, hour_start, min_start, 0);
-    tf2 = datetime(2017, 08, 31, hour_finish, min_finish, 0);
-    
+% Note1): if in any circumstance, the day finish from both time step and
+% daily simulation does not match, users sould declare day_finish2.
+% otherwise day_finish2 equals to day_finish
+% 
+% Note 2: here the majority of plots are based on daily simulations, so the
+% time step simulations are set to false.
+%
 %% construct time 
+    [ms, ds]   = Julian2MonthDay(day_start , year_start);
+    [mf, df]   = Julian2MonthDay(day_finish , year_finish);
+    [mf2, df2] = Julian2MonthDay(day_finish2 , year_finish);
+    
+    ts = datetime(year_start, ms, ds);
+    tf = datetime(year_finish, mf, df);
+    ts2 = datetime(year_start, ms, ds, hour_start, min_start, 0);
+    tf2 = datetime(year_finish, mf2, df2, hour_finish, min_finish, 0);
+
 % daily
     time    =  ts : caldays(1) : tf;
     time_yr =  ts : calyears(1) : tf;
@@ -77,70 +104,50 @@ function MESH_WBBA_Sho()
     time_ts  =  ts2 : hours(0.5) : tf2;
     
 %% MESH storage components parameters
-% note : ts outputs have two columns more than daily ones. add number 2 to
-% indices for presentation and calculation 
-
+    if (timestep)
+        ind_HOUR     = 3;  
+        ind_MINS     = 4;
+        j = 2; 
+    else
+        j = 0;    
+    end
+     
     % index
-    ind_year       = 1;  ind_day        = 2;
-    %ind_HOUR       = 3;  ind_MINS       = 4;
+    ind_year       = 1;    ind_day        = 2; 
+    ind_PREACC     = 3+j;  ind_ETACC      = 4+j;
+    ind_ROFACC     = 5+j;  ind_OVRFLWACC  = 6+j;  ind_LATFLWACC   = 7+j;  ind_DRAINSOLACC = 8+j;
+    ind_DSTGWACC   = 9+j;  ind_PREC       = 10+j; ind_ET          = 11+j; ind_ROF         = 12+j;
+    ind_OVRFLW     = 13+j; ind_LATFLW     = 14+j; ind_DRAINSOL    = 15+j;
+    ind_FZWSCAN    = 16+j; ind_LQWSCAN    = 17+j; ind_SNO         = 18+j; ind_LQWSSNO     = 19+j; 
+    ind_LQWSPND    = 20+j;
+    ind_LQWSSOL1   = 21+j; ind_FZWSSOL1   = 22+j; ind_ALWSSOL1       = 23+j;
+    ind_LQWSSOL2   = 24+j; ind_FZWSSOL2   = 25+j; ind_ALWSSOL2       = 26+j;
+    ind_LQWSSOL3   = 27+j; ind_FZWSSOL3   = 28+j; ind_ALWSSOL3       = 29+j;
+    ind_LQWSSOL4   = 30+j; ind_FZWSSOL4   = 31+j; ind_ALWSSOL4       = 32+j;
+    ind_LQWSSOL    = 33+j; ind_FZWSSOL    = 34+j; ind_ALWSSOL        = 35+j;
+    ind_STGGW      = 36+j; ind_DZS        = 37+j;  
+    ind_STGW       = 38+j; ind_DSTGW      = 39+j;
     
-    ind_PREACC     = 3;  ind_ETACC      = 4;
-    ind_ROFACC     = 5;  ind_OVRFLWACC  = 6;  ind_LATFLWACC   = 7;  ind_DRAINSOLACC = 8;
-    ind_DSTGWACC   = 9;  ind_PREC       = 10; ind_ET          = 11; ind_ROF         = 12;
-    ind_OVRFLW     = 13; ind_LATFLW     = 14; ind_DRAINSOL    = 15;
-    ind_FZWSCAN    = 16; ind_LQWSCAN    = 17; ind_SNO         = 18; ind_LQWSSNO     = 19; 
-    ind_LQWSPND    = 20;
-    ind_LQWSSOL1   = 21; ind_FZWSSOL1   = 22; ind_ALWSSOL1       = 23;
-    ind_LQWSSOL2   = 24; ind_FZWSSOL2   = 25; ind_ALWSSOL2       = 26;
-    ind_LQWSSOL3   = 27; ind_FZWSSOL3   = 28; ind_ALWSSOL3       = 29;
-    ind_LQWSSOL4   = 30; ind_FZWSSOL4   = 31; ind_ALWSSOL4       = 32;
-    ind_LQWSSOL    = 33; ind_FZWSSOL    = 34; ind_ALWSSOL        = 35;
-    ind_STGGW      = 36; ind_DZS        = 37;  
-    ind_STGW       = 38; ind_DSTGW      = 39;
-
-    % description
-    descr_year       = 'year';      descr_day         = 'day';
-    descr_hour       = 'hour';      descr_mins        = 'mins';
-    
-    descr_PREACC     = 'PREACC';    descr_ETACC      = 'ETACC';
-    descr_ROFACC     = 'ROFACC';    descr_OVRFLWACC  = 'OVRFLWACC';     descr_LATFLWACC   = 'LATFLWACC';    descr_DRAINSOLACC = 'DRAINSOLACC';
-    descr_DSTGWACC   = 'DSTGWACC';  descr_PREC       = 'PREC';          descr_ET          = 'ET';           descr_ROF         = 'ROF';
-    descr_OVRFLW     = 'OVRFLW';    descr_LATFLW     = 'LATFLW';        descr_DRAINSOL    = 'DRAINSOL';
-    descr_FZWSCAN    = 'FZWSCAN';   descr_LQWSCAN    = 'LQWSCAN';       descr_SNO         = 'SNO';          descr_LQWSSNO     = 'LQWSSNO'; 
-    descr_LQWSPND    = 'LQWSPND';
-    descr_LQWSSOL1   = 'LQWSSOL1';  descr_FZWSSOL1   = 'FZWSSOL1';      descr_ALWSSOL1       = 'ALWSSOL1';
-    descr_LQWSSOL2   = 'LQWSSOL2';  descr_FZWSSOL2   = 'FZWSSOL2';      descr_ALWSSOL2       = 'ALWSSOL2';
-    descr_LQWSSOL3   = 'LQWSSOL3';  descr_FZWSSOL3   = 'FZWSSOL3';      descr_ALWSSOL3       = 'ALWSSOL3';
-    descr_LQWSSOL4   = 'LQWSSOL4';  descr_FZWSSOL4   = 'FZWSSOL4';      descr_ALWSSOL4       = 'ALWSSOL4';
-    descr_LQWSSOL    = 'LQWSSOL';   descr_FZWSSOL    = 'FZWSSOL';       descr_ALWSSOL        = 'ALWSSOL';
-    descr_STGGW      = 'STGGW';     descr_DZS        = 'DZS';  
-    descr_STGW       = 'STGW';      descr_DSTGW      = 'DSTGW';
-
 %% reading input file 
-    BAWB    = xlsread(Info{1,2}{1 , 1});
-    BAWB_ts = xlsread(Info{1,2}{2 , 1});
+    BAWB    = MESH_WBBA_extract(prmname, year_start, day_start, hour_start, min_start, ...        
+                            year_finish, day_finish, hour_finish, min_finish, ...       
+                            timestep);
+    BAWB_ts = MESH_WBBA_extract(prmnamets, year_start, day_start, hour_start, min_start, ...        
+                            year_finish, day_finish2, hour_finish, min_finish, ...       
+                            ~timestep);
     
-    % extracting monnthly indices 
-    rs = find ( BAWB(:,1) == year_start  & BAWB(:,2) == day_start); 
-    rf = find (BAWB(:,1)  == year_finish & BAWB(:,2) == day_finish); 
-    
-    rs2 = find ( BAWB_ts(:,1) == year_start  & BAWB_ts(:,2) == day_start...
-                & BAWB_ts(:,3) == hour_start  & BAWB_ts(:,4) == min_start); 
-    rf2 = find ( BAWB_ts(:,1) == year_finish  & BAWB_ts(:,2) == day_finish2...
-                & BAWB_ts(:,3) == hour_finish  & BAWB_ts(:,4) == min_finish); 
-    
-    BAWB    =  BAWB(rs : rf, :);
-    BAWB_ts =  BAWB_ts(rs2 : rf2, :);
-
 %% calculating time step imbalance    
 % Note1 : It is recommended to use the time step results rather than daily
 % one. 
-% Note2: Because ts outputs are used, number 2 is added to indices 
-imbl = BAWB_ts(:, ind_PREC + 2) - BAWB_ts(:, ind_ET + 2) - BAWB_ts(:, ind_ROF + 2) - ...
-                BAWB_ts(:, ind_DSTGW + 2);
+% setting j for ts results
+j = 2;
+imbl = BAWB_ts(:, ind_PREC + j) - BAWB_ts(:, ind_ET + j) - BAWB_ts(:, ind_ROF + j) - ...
+                BAWB_ts(:, ind_DSTGW + j);
 % This imblance of first simulations is high, so I removed it 
 imbl_sum = round(sum(imbl(2:end)),2);
 
+% resetting it to its default value 
+j = 0;
 %% Setting plot style and parameters 
     % Plot Style 
 %     color = {[0.55 0.55 0.55],[0.35 0.35 0.35],[0.8500 0.3250 0.0980],'b','r','g',[0.25 0.25 0.25],...
@@ -190,7 +197,7 @@ imbl_sum = round(sum(imbl(2:end)),2);
     st(:,2) = BAWB(: , ind_LATFLWACC); 
     st(:,3) = BAWB(: , ind_DRAINSOLACC); 
     
-    DataName =  {descr_OVRFLWACC, descr_LATFLWACC, descr_DRAINSOLACC};
+    DataName =  {'OVRFLWACC', 'LATFLWACC', 'DRAINSOLACC'};
     
     figure ('units','normalized','outerposition',[0 0 1 1]);
     
@@ -231,7 +238,7 @@ imbl_sum = round(sum(imbl(2:end)),2);
     
 % SWE
     st(:,1) = BAWB(: , ind_SNO); 
-    DataName =  {descr_SNO};
+    DataName =  {'SNO'};
     
     figure ('units','normalized','outerposition',[0 0 1 1]);
     
@@ -271,7 +278,7 @@ imbl_sum = round(sum(imbl(2:end)),2);
     st(:,2) = BAWB(: , ind_FZWSSOL); 
     st(:,3) = BAWB(: , ind_ALWSSOL); 
     
-    DataName =  {descr_LQWSSOL, descr_FZWSSOL, descr_ALWSSOL};
+    DataName =  {'LQWSSOL', 'FZWSSOL', 'ALWSSOL'};
     
     figure ('units','normalized','outerposition',[0 0 1 1]);
     
@@ -314,7 +321,7 @@ imbl_sum = round(sum(imbl(2:end)),2);
 % STGGW
     
     st(:,1) = BAWB(: , ind_STGGW); 
-    DataName =  {descr_STGGW};
+    DataName =  {'STGGW'};
     
     figure ('units','normalized','outerposition',[0 0 1 1]);
     
@@ -354,7 +361,7 @@ imbl_sum = round(sum(imbl(2:end)),2);
     st(:,3) = BAWB(: , ind_LQWSSOL);
     st(:,4) = BAWB(: , ind_FZWSSOL);
     
-    DataName =  {descr_STGW, descr_SNO, descr_LQWSSOL, descr_FZWSSOL};
+    DataName =  {'STGW', 'SNO', 'LQWSSOL', 'FZWSSOL'};
     
     figure ('units','normalized','outerposition',[0 0 1 1]);
     for j = 1 : 4

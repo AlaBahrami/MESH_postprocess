@@ -1,7 +1,7 @@
 function MESH_WBBA_Sho(prmname, prmnamets,...
                         year_start, day_start, hour_start, min_start, ...        
                         year_finish, day_finish, day_finish2, hour_finish, min_finish,...
-                        timestep)
+                        timestep, subbasin)
 
 % Syntax
 %
@@ -38,8 +38,9 @@ function MESH_WBBA_Sho(prmname, prmnamets,...
 %        
 %       min_finish              finish minute of simulation
 %
-%       timestep                whether time step data is read
+%       timestep                flag for activating time step data 
 %
+%       subbasin                flag for activating subbasin data
 %
 % Output      
 % 
@@ -78,7 +79,8 @@ function MESH_WBBA_Sho(prmname, prmnamets,...
         hour_finish      = 22;
         min_finish       = 30;
         timestep         = false;
-    end 
+        subbasin         = true;
+    end  
 % Note1): if in any circumstance, the day finish from both time step and
 % daily simulation does not match, users sould declare day_finish2.
 % otherwise day_finish2 equals to day_finish
@@ -128,70 +130,85 @@ function MESH_WBBA_Sho(prmname, prmnamets,...
     ind_STGGW      = 36+j; ind_DZS        = 37+j;  
     ind_STGW       = 38+j; ind_DSTGW      = 39+j;
     
-%% reading input file 
-    BAWB    = MESH_WBBA_extract(prmname, year_start, day_start, hour_start, min_start, ...        
-                            year_finish, day_finish, hour_finish, min_finish, ...       
-                            timestep);
-    BAWB_ts = MESH_WBBA_extract(prmnamets, year_start, day_start, hour_start, min_start, ...        
-                            year_finish, day_finish2, hour_finish, min_finish, ...       
-                            ~timestep);
-    
-%% calculating time step imbalance    
-% Note1 : It is recommended to use the time step results rather than daily
-% one. 
-% setting j for ts results
-j = 2;
-imbl = BAWB_ts(:, ind_PREC + j) - BAWB_ts(:, ind_ET + j) - BAWB_ts(:, ind_ROF + j) - ...
-                BAWB_ts(:, ind_DSTGW + j);
-% This imblance of first simulations is high, so I removed it 
-imbl_sum = round(sum(imbl(2:end)),2);
-
-% resetting it to its default value 
-j = 0;
 %% Setting plot style and parameters 
     % Plot Style 
 %     color = {[0.55 0.55 0.55],[0.35 0.35 0.35],[0.8500 0.3250 0.0980],'b','r','g',[0.25 0.25 0.25],...
 %         'w', 'b', 'm','w'};
     color ={[0.35 0.35 0.35],[0.850 0.325 0.0980],[0.055 0.310 0.620],...
                              [0 0.48 0.070],'w'};
-    lsty  =  {'-','--'};
-    
-%% Plotting WB compartments 
-    
-% imbalance 
-    DataName = sprintf('The summation of imbalance is: %0.2f', imbl_sum);
-    figure ('units','normalized','outerposition',[0 0 1 1]);
-    
-    h = plot(time_ts(2:end), imbl(2:end),'DatetimeTickFormat' , 'yyyy-MMM'); 
-    h.LineStyle =  lsty{1};
-    h.LineWidth = 2;
-    h.Color = color{3};
-    grid on 
-    
-    st = [];
-    % Axis Labels
-    xlabel('\bf Time [time steps]','FontSize',14,'FontName', 'Times New Roman');
-    ylabel('\bf Equivalent Water Height [mm]','FontSize',14,'FontName', 'Times New Roman');
-    title('Fraser Basin Average','FontSize',14,...
-             'FontWeight','bold','FontName', 'Times New Roman')
+    lsty  =  {'-','--'};    
+%% reading input file 
+    BAWB    = MESH_WBBA_extract(prmname, year_start, day_start, hour_start, min_start, ...        
+                            year_finish, day_finish, hour_finish, min_finish, ...       
+                            timestep);
+%% assigning title       
+%tl = 'Fraser Basin Average';
+name = split(prmname,"_");
+str = name{2};
+if (~subbasin)
+        tl = strcat (str ,' Basin', ' Average');
+else
+        tl = strcat (str ,' Subbasin', ' Average');
+end
+                        
+%% reading timestep
+    % this section is activated when the imblance of entire basin is
+    % needed. It can be activated if the imbalance of subbasin is desired
+    if (~subbasin)
+        BAWB_ts = MESH_WBBA_extract(prmnamets, year_start, day_start, hour_start, min_start, ...        
+            year_finish, day_finish2, hour_finish, min_finish, ...       
+            ~timestep);
 
-    % Axis limit
-    % xlimit
-    xlim([time_ts(2) time_ts(end)])
+    % calculating time step imbalance    
+        % Note1 : It is recommended to use the time step results rather than daily
+        % one. 
+        % setting j for ts results
+        j = 2;
+        imbl = BAWB_ts(:, ind_PREC + j) - BAWB_ts(:, ind_ET + j) - BAWB_ts(:, ind_ROF + j) - ...
+                        BAWB_ts(:, ind_DSTGW + j);
+        % This imblance of first simulations is high, so I removed it 
+        imbl_sum = round(sum(imbl(2:end)),2);
 
-    % Axis setting
-    ax = gca; 
-    set(ax , 'FontSize', 14,'FontWeight','bold','FontName', 'Times New Roman')
-    ax.GridAlpha = 0.4;
-    ax.GridColor = [0.65, 0.65, 0.65];
-    ax.XTick = time_yr;
+        % resetting it to its default value 
+        j = 0;
+     
     
-    h = legend(DataName);
-    h.Location = 'northwest'; 
-    h.FontSize = 14;
-    h.Orientation = 'horizontal';
-    h.EdgeColor = color{end};
+   % plotting imbalance  
+    
+        DataName = sprintf('The summation of imbalance is: %0.2f', imbl_sum);
+        figure ('units','normalized','outerposition',[0 0 1 1]);
 
+        h = plot(time_ts(2:end), imbl(2:end),'DatetimeTickFormat' , 'yyyy-MMM'); 
+        h.LineStyle =  lsty{1};
+        h.LineWidth = 2;
+        h.Color = color{3};
+        grid on 
+
+        st = [];
+        % Axis Labels
+        xlabel('\bf Time [time steps]','FontSize',14,'FontName', 'Times New Roman');
+        ylabel('\bf Equivalent Water Height [mm]','FontSize',14,'FontName', 'Times New Roman');
+        title(tl,'FontSize',14,...
+                 'FontWeight','bold','FontName', 'Times New Roman')
+
+        % Axis limit
+        % xlimit
+        xlim([time_ts(2) time_ts(end)])
+
+        % Axis setting
+        ax = gca; 
+        set(ax , 'FontSize', 14,'FontWeight','bold','FontName', 'Times New Roman')
+        ax.GridAlpha = 0.4;
+        ax.GridColor = [0.65, 0.65, 0.65];
+        ax.XTick = time_yr;
+
+        h = legend(DataName);
+        h.Location = 'northwest'; 
+        h.FontSize = 14;
+        h.Orientation = 'horizontal';
+        h.EdgeColor = color{end};
+    end 
+%% Plotting WB compartments    
 % overland, lateral and drainage 
     st(:,1) = BAWB(: , ind_OVRFLWACC); 
     st(:,2) = BAWB(: , ind_LATFLWACC); 
@@ -216,7 +233,7 @@ j = 0;
     % Axis Labels
     xlabel('\bf Time [days]','FontSize',14,'FontName', 'Times New Roman');
     ylabel('\bf Equivalent Water Height [mm]','FontSize',14,'FontName', 'Times New Roman');
-    title('Fraser Basin Average','FontSize',14,...
+    title(tl,'FontSize',14,...
              'FontWeight','bold','FontName', 'Times New Roman')
 
     % Axis limit
@@ -252,7 +269,7 @@ j = 0;
     % Axis Labels
     xlabel('\bf Time [days]','FontSize',14,'FontName', 'Times New Roman');
     ylabel('\bf Equivalent Water Height [mm]','FontSize',14,'FontName', 'Times New Roman');
-    title('Fraser Basin Average','FontSize',14,...
+    title(tl,'FontSize',14,...
              'FontWeight','bold','FontName', 'Times New Roman')
 
     % Axis limit
@@ -298,7 +315,7 @@ j = 0;
     % Axis Labels
     xlabel('\bf Time [days]','FontSize',14,'FontName', 'Times New Roman');
     ylabel('\bf Equivalent Water Height [mm]','FontSize',14,'FontName', 'Times New Roman');
-    title('Fraser Basin Average','FontSize',14,...
+    title(tl,'FontSize',14,...
              'FontWeight','bold','FontName', 'Times New Roman')
 
     % Axis limit
@@ -335,7 +352,7 @@ j = 0;
     % Axis Labels
     xlabel('\bf Time [days]','FontSize',14,'FontName', 'Times New Roman');
     ylabel('\bf Equivalent Water Height [mm]','FontSize',14,'FontName', 'Times New Roman');
-    title('Fraser Basin Average','FontSize',14,...
+    title(tl,'FontSize',14,...
              'FontWeight','bold','FontName', 'Times New Roman')
 
     % Axis limit
@@ -378,7 +395,7 @@ j = 0;
     % Axis Labels
     xlabel('\bf Time [days]','FontSize',14,'FontName', 'Times New Roman');
     ylabel('\bf Equivalent Water Height [mm]','FontSize',14,'FontName', 'Times New Roman');
-    title('Fraser Basin Average','FontSize',14,...
+    title(tl,'FontSize',14,...
              'FontWeight','bold','FontName', 'Times New Roman')
 
     % Axis limit

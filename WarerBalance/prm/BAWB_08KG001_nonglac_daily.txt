@@ -1,0 +1,1 @@
+BAWB_daily			Input\Fraser\nonglacier\subbasin\daily\Basin_average_water_balance_Gauge25.csv

@@ -57,11 +57,6 @@ function MESH_WBBA_Sho(prmname, prmnamets,...
 %
 % last modified : 02/24/2021
 %
-%   todo:
-%       1) modify indices for considering ts results 
-%       2) modify the MESH_BAWB_extract to get wb for basin and subbasins 
-%       3) modify it to be comatabile to read all subbasins 
-%       4) MESH_WBBA_extract()
 %
 %% Copyright (C) 2021 Ala Bahrami                                                              
 %% loading the input files 
@@ -79,7 +74,7 @@ function MESH_WBBA_Sho(prmname, prmnamets,...
         hour_finish      = 22;
         min_finish       = 30;
         timestep         = false;
-        subbasin         = true;
+        subbasin         = false;
     end  
 % Note1): if in any circumstance, the day finish from both time step and
 % daily simulation does not match, users sould declare day_finish2.

@@ -73,21 +73,33 @@ function MESH_ST_Sho(prmname, year_start, year_finish, day_finish, mult_sim)
     end 
       
     m  = length(STFL_nglac);
-%% assigning title 
-
-%% output directory 
-
+%% assigning title and output dir
+    for i = 1 :m
+        str    = strcat ('Station','_');
+        str2   = strcat ('Station',' :');
+        tl{i} =  strcat(str2, char(STFL_glac(i).id));
+        dir    =  'output\fraser\';
+        outdir{i} = strcat(dir, strcat(str, char(STFL_glac(i).id)),'.tif');
+    end 
+    
 %% output directory 
     % todo should be considered based on multiple runs
-    for i = 1 : m
+    for i = 1 : m 
         fig = figure ('units','normalized','outerposition',[0 0 1 1]);
         st(:,1) = STFL_nglac(i).data(: , 1); 
         st(:,2) = STFL_nglac(i).data(: , 2); 
-        % this one should be conditioned 
-        st(:,3) = STFL_glac(i).data(: , 2); 
-        %DataName =  {''};
-
-        for j = 1 : 3      
+        
+        if (mult_sim)
+            st(:,3) = STFL_glac(i).data(: , 2);
+            DataName =  {'Observed Streamflow','Simulated Streamflow (nonglacier)',...
+                          'Simulated Streamflow (glacier)'};
+            n = 3;
+        else
+            DataName =  {'Observed Streamflow','Simulated Streamflow (nonglacier)'};
+            n = 2;
+        end
+        
+        for j = 1 : n      
             h = plot(time, st(:,j),'DatetimeTickFormat' , 'yyyy-MMM');
             hold on 
             h.LineStyle =  lsty{1};
@@ -101,8 +113,8 @@ function MESH_ST_Sho(prmname, year_start, year_finish, day_finish, mult_sim)
 
         % Axis Labels
         xlabel('\bf Time [days]','FontSize',14,'FontName', 'Times New Roman');
-        ylabel('\bf River Discharge [cumecs]','FontSize',14,'FontName', 'Times New Roman');
-        title('Station simulations','FontSize',14,...
+        ylabel('\bf River Discharge [m^{3}/s]','FontSize',14,'FontName', 'Times New Roman');
+        title(tl{i},'FontSize',14,...
                  'FontWeight','bold','FontName', 'Times New Roman')
 
         % Axis limit
@@ -115,6 +127,18 @@ function MESH_ST_Sho(prmname, year_start, year_finish, day_finish, mult_sim)
         ax.GridAlpha = 0.4;
         ax.GridColor = [0.65, 0.65, 0.65];
         ax.XTick = time_yr;
+        
+        % legend 
+        h = legend(DataName);
+        h.Location = 'northwest'; 
+        h.FontSize = 14;
+        h.Orientation = 'horizontal';
+        h.EdgeColor = color{end};
+        
+        % save 
+        saveas(fig, outdir{i});
+        close(fig)
+        
     end 
 
 end 

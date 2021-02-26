@@ -1,5 +1,5 @@
 function RFcoef = runoff_coeff_calc(prmnamest, year_start, day_start, hour_start, min_start,...
-                                year_finish, day_finish, hour_finish, min_finish, ind_PREACC)
+                                year_finish, day_finish, hour_finish, min_finish, ind_PREACC, misrec)
 
 % Syntax
 %
@@ -34,6 +34,9 @@ function RFcoef = runoff_coeff_calc(prmnamest, year_start, day_start, hour_start
 %
 %       ind_PREACC              index of precipitation in the wb file   
 %
+%       misrec                  flag indicating if there is any missing
+%                               records in streamflow observations 
+%
 %
 % Output      
 % 
@@ -49,8 +52,9 @@ function RFcoef = runoff_coeff_calc(prmnamest, year_start, day_start, hour_start
 %
 % Created Date: 02/25/2021
 %
-% last modified : 02/25/2021
-%
+% last modified : 02/26/2021
+%                 1) consider missing streamflow records and exclude them 
+%                    for all stations    
 %
 %% Copyright (C) 2021 Ala Bahrami    
 %% loading the input files
@@ -65,13 +69,29 @@ function RFcoef = runoff_coeff_calc(prmnamest, year_start, day_start, hour_start
         hour_finish        = 22;
         min_finish         = 30;
         ind_PREACC         = 3;
+        misrec             = true;
     end 
       
 %% caling the streamflow records and information 
     STFL = MESH_ST_extract(prmnamest, year_start, day_start,...
                                 year_finish, day_finish);
     m = length(STFL);
+    n = length(STFL(1).data);
     
+%% fiding missing streamflow data  
+    % this section is usefull when we dont have missing values in the
+    % middle of streamflow records. The solution here is applicable when
+    % missing are located at beginning or at end 
+    fmis = zeros(n,1);
+    for i = 1 : m
+        fd = STFL(i).data(:,1) == -1;
+        fmis = fmis + fd;
+    end 
+    fmis = fmis == 0;
+    r = find(fmis ==1);
+    rmin = min(r) - 1;
+    rmax = max(r);
+
 %% getting precipitation accumulated for each subbasin    
     % Note : the directory for reading the guage based wb simulation can be 
     % modified regarding user file structure. 
@@ -91,8 +111,15 @@ function RFcoef = runoff_coeff_calc(prmnamest, year_start, day_start, hour_start
         BAWB = MESH_WBBA_extract(prmnamewb, year_start, day_start, hour_start, min_start, ...        
                             year_finish, day_finish, hour_finish, min_finish, ...       
                             false);
-                        
-        PRECACC (i) = BAWB(end, ind_PREACC);                 
+        if (~misrec)                
+            PRECACC (i) = BAWB(end, ind_PREACC);
+        else
+              if (rmin ~= 0)
+                    PRECACC (i) = BAWB(rmax, ind_PREACC) - BAWB(rmin, ind_PREACC);
+              else
+                    PRECACC (i) = BAWB(rmax, ind_PREACC);
+              end
+        end
     end 
 %% calcculate runoff density 
     flow   = zeros(m,1);
@@ -101,7 +128,7 @@ function RFcoef = runoff_coeff_calc(prmnamest, year_start, day_start, hour_start
     
     for i = 1 : m
         % calculate flow volume in m3
-        flow(i) =  sum(STFL(i).data(:,1)) * 24 * 3600;
+        flow(i) =  sum(STFL(i).data(fmis,1)) * 24 * 3600;
         % calculate runoff in mm
         runoff(i) = flow(i)/(STFL(i).info(3)*10^6)*1000;
         % runoff coefficient

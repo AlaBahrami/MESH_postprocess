@@ -1,13 +1,13 @@
-function RFs = runoff_coeff_calc(prmnamest, year_start, day_start, hour_start, min_start,...
+function RFcoef = runoff_coeff_calc(prmnamest, year_start, day_start, hour_start, min_start,...
                                 year_finish, day_finish, hour_finish, min_finish, ind_PREACC)
 
 % Syntax
 %
-%       DDEN = RUNOFF_COEFF_CALC(...)
+%       RFCOEF = RUNOFF_COEFF_CALC(...)
 % 
 % Discription
 %
-%       The pupoose of this function is to calculate the drainage density
+%       The pupoose of this function is to calculate the runoff coefficient
 %       for each of subbasin in any desired basin of interest.
 %        
 %
@@ -37,7 +37,8 @@ function RFs = runoff_coeff_calc(prmnamest, year_start, day_start, hour_start, m
 %
 % Output      
 % 
-%       DDEN                    calculated density for each of any subbasin                  
+%       RFCOEF                   calculated runoff coefficient for any 
+%                                subbasin of interest                  
 %
 % Reference 
 %       
@@ -96,7 +97,7 @@ function RFs = runoff_coeff_calc(prmnamest, year_start, day_start, hour_start, m
 %% calcculate runoff density 
     flow   = zeros(m,1);
     runoff = zeros(m,1);
-    RFs    = zeros(m,1);
+    RFcoef = cell(m,2); 
     
     for i = 1 : m
         % calculate flow volume in m3
@@ -104,6 +105,12 @@ function RFs = runoff_coeff_calc(prmnamest, year_start, day_start, hour_start, m
         % calculate runoff in mm
         runoff(i) = flow(i)/(STFL(i).info(3)*10^6)*1000;
         % runoff coefficient
-        RFs(i) = round(runoff(i)/PRECACC (i), 2); 
+        RFcoef{i,1} = char(STFL(i).id);
+        RFcoef{i,2} = round(runoff(i)/PRECACC (i), 2);
     end 
+    
+%% write file to output
+    outdir = 'output/fraser/runoffcoeff/rfcoef.xlsx'; 
+    xlswrite(outdir, RFcoef);
+    
 end 

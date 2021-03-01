@@ -89,6 +89,7 @@ function RFcoef = runoff_coeff_calc(prmnamest, year_start, day_start, hour_start
     end 
     fmis = fmis == 0;
     r = find(fmis ==1);
+    % -1 is used for subtract PREACC before missing from PREACC last record
     rmin = min(r) - 1;
     rmax = max(r);
 

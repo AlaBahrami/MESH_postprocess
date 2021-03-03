@@ -79,7 +79,8 @@ function MESH_ST_Sho(prmname, year_start, year_finish, day_finish, mult_sim)
         str2   = strcat ('Station',' :');
         tl{i} =  strcat(str2, char(STFL_glac(i).id));
         dir    =  'output\fraser\';
-        outdir{i} = strcat(dir, strcat(str, char(STFL_glac(i).id)),'.tif');
+        %outdir{i} = strcat(dir, strcat(str, char(STFL_glac(i).id)),'.tif');
+        outdir{i} = strcat(dir, strcat(str, char(STFL_glac(i).id)),'.png');
     end 
     
 %% output directory 

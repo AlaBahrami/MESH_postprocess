@@ -178,8 +178,9 @@ function MESH_WBBA_Sho(prmname, prmnamets,...
     
    % plotting imbalance  
         fs1 = strcat(outdir,'imbalance.fig');
-        fs2 = strcat(outdir,'imbalance.tif');
-    
+        %fs2 = strcat(outdir,'imbalance.tif');
+        fs2 = strcat(outdir,'imbalance.png');
+        
         DataName = sprintf('The summation of imbalance is: %0.2f', imbl_sum);
         fig = figure ('units','normalized','outerposition',[0 0 1 1]);
 
@@ -220,8 +221,9 @@ function MESH_WBBA_Sho(prmname, prmnamets,...
 % overland, lateral and drainage 
     % output dir 
     fs1 = strcat(outdir,'flow.fig');
-    fs2 = strcat(outdir,'flow.tif');
-
+    %fs2 = strcat(outdir,'flow.tif');
+    fs2 = strcat(outdir,'flow.png');
+    
     st(:,1) = BAWB(: , ind_OVRFLWACC); 
     st(:,2) = BAWB(: , ind_LATFLWACC); 
     st(:,3) = BAWB(: , ind_DRAINSOLACC); 
@@ -270,8 +272,9 @@ function MESH_WBBA_Sho(prmname, prmnamets,...
     
 % SWE
     fs1 = strcat(outdir,'SWE.fig');
-    fs2 = strcat(outdir,'SWE.tif');
-
+    %fs2 = strcat(outdir,'SWE.tif');
+    fs2 = strcat(outdir,'SWE.png');
+    
     st(:,1) = BAWB(: , ind_SNO); 
     DataName =  {'SNO'};
     
@@ -313,7 +316,8 @@ function MESH_WBBA_Sho(prmname, prmnamets,...
     
 %  Liquid, Frozen, and ALW
     fs1 = strcat(outdir,'WS.fig');
-    fs2 = strcat(outdir,'WS.tif');
+    %fs2 = strcat(outdir,'WS.tif');
+    fs2 = strcat(outdir,'WS.png');
     
     st(:,1) = BAWB(: , ind_LQWSSOL); 
     st(:,2) = BAWB(: , ind_FZWSSOL); 
@@ -364,9 +368,12 @@ function MESH_WBBA_Sho(prmname, prmnamets,...
     close(fig);
 % STGGW
     fs1 = strcat(outdir,'GW.fig');
-    fs2 = strcat(outdir,'GW.tif');
+    %fs2 = strcat(outdir,'GW.tif');
+    fs2 = strcat(outdir,'GW.png');
     
     st(:,1) = BAWB(: , ind_STGGW); 
+    min_st = min(st);
+    max_st = max(st) + 5;
     DataName =  {'STGGW'};
     
     fig = figure ('units','normalized','outerposition',[0 0 1 1]);
@@ -387,7 +394,7 @@ function MESH_WBBA_Sho(prmname, prmnamets,...
     % Axis limit
     % xlimit
     xlim([time(1) time(end)])
-    ylim([0 16])
+    ylim([min_st max_st])
     % Axis setting
     ax = gca; 
     set(ax , 'FontSize', 14,'FontWeight','bold','FontName', 'Times New Roman')
@@ -407,8 +414,9 @@ function MESH_WBBA_Sho(prmname, prmnamets,...
 
 % Total Storage and other compartments
     fs1 = strcat(outdir,'STGW.fig');
-    fs2 = strcat(outdir,'STGW.tif');
-
+    %fs2 = strcat(outdir,'STGW.tif');
+    fs2 = strcat(outdir,'STGW.png');
+    
     st(:,1) = BAWB(: , ind_STGW); 
     st(:,2) = BAWB(: , ind_SNO); 
     st(:,3) = BAWB(: , ind_LQWSSOL);

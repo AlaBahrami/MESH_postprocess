@@ -1,2 +1,2 @@
 STFLO_Info                  Input\Fraser\FRB_Station_Info.xlsx
-STFLO_nonglacier			      Input\Fraser\MESH_output_streamflow_nonglacier.csv
+STFLO_nonglacier			Input\Fraser\MESH_output_streamflow_nonglacier.csv

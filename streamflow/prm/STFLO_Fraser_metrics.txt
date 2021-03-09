@@ -1,0 +1,5 @@
+STFLO1			        Input\Fraser\Metrics\Metrics1_Out_nonglacier_Liard.txt
+STFLO2                  Input\Fraser\Metrics\Metrics1_Out_glacier_Liard.txt
+STFLO3                  Input\Fraser\Metrics\Metrics2_Out_nonglacier_Athabasca.txt
+STFLO4                  Input\Fraser\Metrics\Metrics2_Out_glacier_Athabasca.txt
+STFLO5                  Input\Fraser\Metrics\Metrics2_Out_glacier_Athabasca_5IAK.txt

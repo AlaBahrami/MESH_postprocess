@@ -57,6 +57,7 @@ function MESH_SF_Metrics_sho()
     bias  = zeros(n,m);
     nsd   = zeros(n,m);
     lnnsd = zeros(n,m);
+    kge   = zeros(n,m);
     for i = 1 : n
         for j = 1 : m 
             % use minus to be compatible to (sim - obs)
@@ -64,6 +65,7 @@ function MESH_SF_Metrics_sho()
             bias(i,j)  = -metrics(Basin_id(i),4,j)*100;
             nsd(i,j)   = metrics(Basin_id(i),6,j);
             lnnsd(i,j) = metrics(Basin_id(i),8,j);  
+            kge(i,j)   = metrics(Basin_id(i),11,j);
         end 
     end 
 %% Setting plot style and parameters 
@@ -74,21 +76,24 @@ function MESH_SF_Metrics_sho()
 %% display metrics results from different simulations
     simlab ={'nonglacier-Liard','glacier-Liard','nonglacier-Athabasca',...
             'glacier-Athabasca','glacier-Athabasca-5IAK'};
-    yl = {'PBIAS [%]','NSD','LnNSD'};   
+    yl = {'PBIAS [%]','NSD','LnNSD','KGE'};   
     outdir = 'Output\Fraser\metrics\';
     for p = 1 : n
         fig = figure ('units','normalized','outerposition',[0 0 1 1]);
-        for k = 1 :3
-            subplot(1,3,k)
+        for k = 1 :4
+            subplot(1,4,k)
             if (k ==1)
                 % PBIAS
                 b = bar(bias(p,:));
             elseif (k==2)
                 % NSD
                 b = bar(nsd(p,:));
-            else
+            elseif(k==3)
                 % LNNSD
                 b = bar(lnnsd(p,:));
+            else
+                % kge
+                b = bar(kge(p,:));
             end
 
             for i = 1 : m

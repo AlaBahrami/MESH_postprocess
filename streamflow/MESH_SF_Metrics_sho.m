@@ -71,11 +71,11 @@ function MESH_SF_Metrics_sho()
 %% Setting plot style and parameters 
     % Plot Style 
     color ={[0.55 0.55 0.55], [0.35 0.35 0.35],[0.850 0.325 0.0980],[0.055 0.310 0.620],...
-                             [0 0.48 0.070],'w'};
+                             [0 0.48 0.070],[0.8 0.608 0],'w'};
                
 %% display metrics results from different simulations
     simlab ={'nonglacier-Liard','glacier-Liard','nonglacier-Athabasca',...
-            'glacier-Athabasca','glacier-Athabasca-5IAK'};
+            'glacier-Athabasca','glacier-Athabasca-5IAK','glacier-Athabasca-5IAK-RDRS'};
     yl = {'PBIAS [%]','NSD','LnNSD','KGE'};   
     outdir = 'Output\Fraser\metrics\';
     for p = 1 : n
